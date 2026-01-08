@@ -1,6 +1,6 @@
 # QEMU Camp Tutorial
 
-QEMU Camp Tutorial 是 QEMU 训练营的在线技术讲义，聚焦 C/Rust 语言与 QEMU 虚拟化/模拟器技术的深度结合，旨在通过系列技术博客、代码示例、原理解析，帮助开发者理解 QEMU 内部机制（如设备模拟、内存虚拟化、中断处理等），并掌握用 C/Rust 开发 QEMU 组件、优化 QEMU 模块的方法。​
+QEMU Camp Tutorial 是 QEMU 训练营的在线技术文档，聚焦 C/Rust 语言与 QEMU 虚拟化/模拟器技术的深度结合，旨在通过系列技术博客、代码示例、原理解析，帮助开发者理解 QEMU 内部机制（如设备模拟、内存虚拟化、中断处理等），并掌握用 C/Rust 开发 QEMU 组件、优化 QEMU 模块的方法。​
 
 无论是虚拟化领域初学者、C/Rust 技术实践者，还是开源爱好者，都能从本项目中获取 QEMU 底层原理的清晰解读与 C/Rust 落地实践的参考案例。
 
