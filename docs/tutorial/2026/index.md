@@ -4,4 +4,4 @@
 
     QEMU 训练营是在清华大学陈渝老师和李明老师的倡议下，由格维开源社区 (GTOC) 发起的公益性技术训练营，旨在搭建一个虚拟化/模拟器技术学习与实践平台，助力开发者深入掌握 QEMU 核心能力，推动开源生态发展。本期 QEMU 训练营（2026）由格维开源社区和华中科技大学开放原子开源俱乐部主办，OpenCamp 训练营协办。合作单位有 OpenCamp 社区、苦芽科技、甲辰计划。
 
-[☞ 线上报名通道-暂未开放 ☄](https://opencamp.cn/qemu/camp/2025/register?code=cMJyhG4owbdmU)
+[☞ 线上报名通道 - 暂未开放 ☄](https://opencamp.cn/qemu/camp/2025/register?code=cMJyhG4owbdmU)
