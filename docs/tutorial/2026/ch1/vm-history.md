@@ -42,7 +42,7 @@ QEMU 是一个成熟的虚拟化软件和模拟器，虽然 QEMU 已经发展了
 
 源自剑桥大学研究项目并随后开源的 Xen，确立了**半虚拟化（Para-Virtualization, PV）**的技术标准。与全虚拟化不同，PV 架构通过修改客户机操作系统内核，使其通过 Hypercall 主动与 Hypervisor 协作。这种设计成功规避了当时 x86 架构下昂贵的指令模拟开销，在硬件辅助虚拟化尚未普及的年代，成为了亚马逊 AWS 等早期公有云平台的首选基础设施。
 
-硬件辅助虚拟化（Hardware-Assisted Virtualization, HVM）： 这是一种处理器架构层面的扩展（如 Intel VT-x 和 AMD-V）。它引入了全新的 CPU 操作模式（如 VMX Root/Non-root 模式），允许虚拟机内核直接运行在特权级（Ring 0）而无需修改。硬件负责处理指令的截获与状态切换，实现了对未修改操作系统的高效支持。
+硬件辅助虚拟化（Hardware-Assisted Virtualization, HVM）：这是一种处理器架构层面的扩展（如 Intel VT-x 和 AMD-V）。它引入了全新的 CPU 操作模式（如 VMX Root/Non-root 模式），允许虚拟机内核直接运行在特权级（Ring 0）而无需修改。硬件负责处理指令的截获与状态切换，实现了对未修改操作系统的高效支持。
 
 2007 年，KVM（Kernel-based Virtual Machine）的并入 Linux 主线，标志着虚拟化架构的第二次范式转移。
 
