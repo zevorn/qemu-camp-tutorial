@@ -1,5 +1,9 @@
 # QOM 面向对象的建模思想
 
+!!! note "主要贡献者"
+
+    - 作者：[@zevorn](https://github.com/zevorn)
+
 ## 基本介绍
 
 QOM 的全称是 QEMU Object Model，是 QEMU 使用面向对象思想实现的抽象层，用来组织 QEMU 中的各种组件（比如设备模拟、后端组件 MemoryRegion、Machine 等）。类似于 C++ 的类，但是 QOM 是用纯 C 语言来实现的。
