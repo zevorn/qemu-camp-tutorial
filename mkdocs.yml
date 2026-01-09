@@ -91,6 +91,7 @@ nav:
         - a. 虚拟技术发展历史: tutorial/2026/ch1/vm-history.md
         - b. QEMU 启动参数分析: tutorial/2026/ch1/qemu-startup-param.md
         - c. QEMU 启动流程分析: tutorial/2026/ch1/qemu-init.md
+        - d. QEMU 面向对象建模: tutorial/2026/ch1/qemu-qom.md
     - QEMU 训练营 2025:
       - 训练营介绍: tutorial/2025/index.md
       - 1. 导学阶段: tutorial/2025/ch0/index.md
