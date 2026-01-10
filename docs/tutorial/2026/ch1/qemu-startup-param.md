@@ -162,9 +162,9 @@ chmod +x start_vm.sh
 
     方法三：官方资料（用于校对参数语义）：
 
-    - Direct Linux Boot：<https://www.qemu.org/docs/master/system/linuxboot.html>
-    - GDB usage：<https://www.qemu.org/docs/master/system/gdb.html>
-    - Keys in the character backend multiplexer：<https://www.qemu.org/docs/master/system/mux-chardev.html>
-    - QEMU User Documentation：<https://www.qemu.org/docs/master/system/qemu-manpage.html>
+    - Direct Linux Boot:<https://www.qemu.org/docs/master/system/linuxboot.html>
+    - GDB usage:<https://www.qemu.org/docs/master/system/gdb.html>
+    - Keys in the character backend multiplexer:<https://www.qemu.org/docs/master/system/mux-chardev.html>
+    - QEMU User Documentation:<https://www.qemu.org/docs/master/system/qemu-manpage.html>
 
 [qemu-ima-link]: https://ima.qq.com/wiki/?shareId=70cb647d4024402dccc94b947c210de2e5c65c68559c166da7ee1a3d9a714e5e
