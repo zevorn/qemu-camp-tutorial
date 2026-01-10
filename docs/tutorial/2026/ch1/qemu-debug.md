@@ -4,7 +4,7 @@
 
     - 作者：[@zevorn](https://github.com/zevorn)
 
-下面介绍五种常用的 QEMU 调试手段，或调试 QEMU，或调试客户机系统。
+下面介绍几种常用的 QEMU 调试手段，或调试 QEMU，或调试客户机系统。
 
 ## GDB 调试 QEMU
 
