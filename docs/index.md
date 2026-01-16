@@ -26,7 +26,7 @@ QEMU Camp Tutorial 是 QEMU 训练营的在线技术文档，聚焦 C/Rust 语�
 
     - 发起组织：[格维开源社区](https://github.com/gevico)
 
-    - 核心维护团队：QEMU 训练营项目组
+    - 核心维护团队：[QEMU 训练营项目组](https://github.com/gevico/qemu-training-camp)
 
     - 社群支持：[QEMU 训练营 QQ 群](https://qm.qq.com/q/DxIhHgpItM)
 
