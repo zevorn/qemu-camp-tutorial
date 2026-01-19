@@ -162,6 +162,16 @@ nav:
         - a. Prof Level Manual: tutorial/2025/ch4/prof-level-manual.md
         - b. G233 Datasheet: tutorial/2025/ch4/g233-board-datasheet.md
       - 6. 贡献名录: tutorial/2025/ch5/contributors.md
+  - 练习:
+    - QEMU 训练营 2026:
+      - 训练营介绍: exercise/2026/index.md
+      - 基础习题:
+        - 习题介绍: exercise/2026/stage0/index.md
+        - C 习题: exercise/2026/stage0/learning-c.md
+        - Rust 习题: exercise/2026/stage0/learning-rust.md
+      - 专业实验:
+        - 实验介绍: exercise/2026/stage1/index.md
+        - a. 模拟 G233 主板: exercise/2026/stage1/g233-board.md
   - 博客: blogs/index.md
   - 新闻:
     - 2026 年:
