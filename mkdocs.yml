@@ -79,6 +79,8 @@ theme:
     - header.autohide
 extra_css:
   - stylesheets/extra.css
+extra_javascript:
+  - javascripts/toc-collapse.js
 
 nav:
   - 主页: index.md

@@ -3,3 +3,12 @@ article p {
   text-align: justify;
   text-justify: inter-word;
 }
+
+/* TOC collapse: show two levels by default */
+.md-sidebar--secondary [data-md-component="toc"] li[data-toc-level]:not([data-toc-level="1"]) > nav {
+  display: none;
+}
+
+.md-sidebar--secondary [data-md-component="toc"] li[data-toc-expanded="true"] > nav {
+  display: block;
+}
