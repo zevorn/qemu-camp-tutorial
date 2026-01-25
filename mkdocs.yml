@@ -46,6 +46,7 @@ markdown_extensions:
 
 theme:
   language: zh
+  logo: image/Qemu-logo.png
   font:
     text: Inter
     code: JetBrains Mono
