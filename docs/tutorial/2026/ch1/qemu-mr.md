@@ -429,3 +429,6 @@ mr 提供了一些类型，用于描述存储设备，常见的有 RAM、ROM、I
 
 在实际应用场景，我们可以利用 mr container 创建不同的地址层级关系，可以在地址空间层面，清晰的描述不同子系统的关系，对于实现模块化有很好的帮助。
 
+!!! question "随堂测验"
+
+    [>> 【点击进入随堂测验】2-3 分钟小测，快速巩固 ☄](https://ima.qq.com/quiz?quizId=amlCeFf3K4joOXecODwuHBCv2BpUBx095JMrXLIElAUB)
