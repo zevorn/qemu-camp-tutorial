@@ -505,3 +505,7 @@ static void *iothread_run(void *opaque)
 ```
 
 这意味着：主线程负责全局事件与定时器调度，而 I/O 密集的设备（例如 block、virtio）可以绑定到指定的 IO-Thread，在它自己的 `AioContext` 中处理事件。这样既能降低主线程负载，又能让 I/O 路径有更稳定的时序与并发控制。
+
+!!! question "随堂测验"
+
+    [>> 【点击进入随堂测验】2-3 分钟小测，快速巩固 ☄](https://ima.qq.com/quiz?quizId=RpnJf6zdVuGNqt7SlKfQ1sHQmfa3ozkaxQontRHUrvCA)
