@@ -24,7 +24,9 @@
 
 !!! note "基础知识"
 
-    [Step1: 搭建 QEMU 开发环境][qemu-env-link]
+    [Step1: 搭建 QEMU C 开发环境][qemu-c-env-link]
+
+    [Step1: 搭建 QEMU Rust 开发环境（可选）][qemu-rust-env-link]
 
     [Step2: QEMU 编译构建文档][qemu-build-link]
 
@@ -56,7 +58,8 @@
 [qemu-ima-link]: https://ima.qq.com/wiki/?shareId=70cb647d4024402dccc94b947c210de2e5c65c68559c166da7ee1a3d9a714e5e
 [qemu-devel-email-link]: https://oss.openatom.club/ch3/sec4/1-qemu-send-email/
 [qemu-build-link]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-system.html
-[qemu-env-link]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-environment.html
+[qemu-c-env-link]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-environment.html
+[qemu-rust-env-link]: https://hust-open-atom-club.github.io/rust-for-qemu-insides/articles/ch0/02-compile-and-debug/
 [gpu-history-link]: https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzUxNzQ5MTExNw==&action=getalbum&album_id=2538479717163761664&scene=126&sessionid=1767843472496#wechat_redirect
 [riscv-arch-book-link]: https://weread.qq.com/web/reader/93d32980813ab937ag01027b
 [riscv-ima-link]: https://ima.qq.com/wiki/?shareId=d61a408f97d541e435252e06621456a0d40691fa7a4059008933fb72873b605f
