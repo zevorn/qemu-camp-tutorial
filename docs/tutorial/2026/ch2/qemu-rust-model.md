@@ -9,6 +9,8 @@ Rust for QEMU 的目标是让 Rust 设备与现有 C 基础设施协同工作。
 !!! tip "概览"
 
     - 建模链路：Kconfig/Meson/Cargo → 绑定生成 → QOM/Device
+    - QOM 实现：Rust 侧对象模型与回调桥接
+    - MemoryRegion：地址空间与 MMIO 回调封装
     - I2C 设备：总线与从设备接口的 Rust 封装
     - GPIO 设备：PCF8574 作为 I2C GPIO 扩展器
     - SysBus 封装：MMIO/IRQ 接入与 BQL 约束
@@ -33,6 +35,52 @@ Kconfig/Meson/Cargo
 3. **设备实现**：用 `qom`/`hwcore` 等 crate 实现 QOM 与 Device trait，必要时补齐 VMState 与复位阶段。
 
 Rust 设备通常与 C 设备并存，Rust 版本启用失败时仍可回退到 C 版本，这样更利于逐步迁移与验证。
+
+## QOM 实现
+
+QOM 是 QEMU 的面向对象建模基础。Rust 侧通过 `ObjectType`/`ObjectImpl` trait 与 `qom_isa!` 宏对齐 C 端 TypeInfo 的继承关系，并要求设备结构体满足 `#[repr(C)]` 与 `ParentField<Parent>` 的布局约束。
+
+典型模式如下：
+
+```rust
+#[repr(C)]
+#[derive(qom::Object)]
+pub struct MyDev {
+    parent_obj: ParentField<SysBusDevice>,
+}
+
+qom_isa!(MyDev: SysBusDevice, DeviceState, Object);
+
+unsafe impl ObjectType for MyDev {
+    type Class = MyDevClass;
+    const TYPE_NAME: &'static CStr = c"mydev";
+}
+
+impl ObjectImpl for MyDev {
+    type ParentType = SysBusDevice;
+    const CLASS_INIT: fn(&mut Self::Class) = Self::Class::class_init::<Self>;
+}
+```
+
+在 `rust/qom/src/qom.rs` 中，QOM 回调通过 `extern "C"` 泛型桥接函数（如 `rust_class_init`、`rust_instance_init`）接入 C 侧的 class_init/instance_init。这样 Rust 设备可以像 C 设备一样注册到 QOM 树中。
+
+## MemoryRegion 实现
+
+地址空间抽象由 `MemoryRegion` 负责。Rust 侧在 `rust/system/src/memory.rs` 中提供 `MemoryRegion` 与 `MemoryRegionOpsBuilder`，用来注册 MMIO 回调并接入 C 侧 `memory_region_init_io`。
+
+常见用法是先构造 ops，再初始化 IO 区域：
+
+```rust
+let ops = MemoryRegionOpsBuilder::<MyDev>::new()
+    .read(&Self::mmio_read)
+    .write(&Self::mmio_write)
+    .little_endian()
+    .build();
+
+MemoryRegion::init_io(&mut self.mmio, &ops, "mydev-mmio", 0x1000);
+```
+
+其中 `MemoryRegionOpsBuilder` 会把 Rust 函数转换为 `extern "C"` 回调，并通过 `FnCall` 把 `*mut c_void` 转回 Rust 引用。`MemoryRegion` 本身也是 QOM 对象，因此能被 SysBus 或主板层级管理与映射。
 
 ## I2C 设备
 
