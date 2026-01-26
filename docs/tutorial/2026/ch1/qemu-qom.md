@@ -4,6 +4,14 @@
 
     - 作者：[@zevorn](https://github.com/zevorn)
 
+!!! tip "概览"
+
+    - QOM 的基本概念与面向对象特性
+    - 类型注册与类型初始化流程
+    - 类型层次结构与继承关系
+    - 对象构造、初始化与生命周期
+    - 对象属性系统的用法
+
 ## 基本介绍
 
 QOM 的全称是 QEMU Object Model，是 QEMU 使用面向对象思想实现的抽象层，用来组织 QEMU 中的各种组件（比如设备模拟、后端组件 MemoryRegion、Machine 等）。类似于 C++ 的类，但是 QOM 是用纯 C 语言来实现的。
@@ -709,4 +717,3 @@ void qdev_init_gpio_out_named(DeviceState *dev, qemu_irq *pins,
     gpio_list->num_out += n;
 }
 ```
-

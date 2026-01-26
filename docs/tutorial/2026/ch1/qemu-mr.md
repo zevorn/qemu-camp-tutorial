@@ -5,6 +5,14 @@
 
     - 作者：[@zevorn](https://github.com/zevorn)
 
+!!! tip "概览"
+
+    - 地址空间与 MemoryRegion 的抽象与分工
+    - 访存流程与设备映射的基本规则
+    - 通过 `info mtree` 观察地址空间布局
+    - MemoryRegion 初始化流程与关键结构
+    - 地址空间节点的层级关系
+
 ## 基本介绍
 
 从 CPU 的角度来说，一切访存行为都是对地址进行操作的（load/store），CPU 并不关心这个地址背后对应的是什么设备，只要能读写到正确结果即可。
