@@ -124,3 +124,7 @@ gem5 是一个开源的全系统模拟器，由卡内基梅隆大学的研究人
 |      游戏机模拟器      | 游戏机模拟器（如 Dolphin（Wii/GameCube）、PCSX2（PS2）、RPCS3（PS3）、Citra（3DS））通过高度精确的硬件模拟，复现经典游戏主机的 CPU、GPU、音频与外设行为，使老游戏可在现代 PC 或移动设备上运行。这类模拟器通常结合动态编译、图形 API 转换（如将 GameCube 的 GX 转为 Vulkan）和时序修复技术，实现超分辨率渲染、帧率提升等“超越原机”的体验。它们在游戏 preservation（数字遗产保存）、逆向工程和怀旧娱乐中具有重要价值。|
 |      嵌入式硬件模拟器  | 专用于嵌入式系统开发的虚拟平台（如 Wind River Simics、QEMU for embedded），可模拟特定 SoC（如 NXP i.MX、TI AM335x）、开发板及外设（UART、I2C、SPI、CAN 总线）。工程师可在硬件尚未就绪时提前开发驱动、操作系统和应用软件，显著缩短产品上市周期。这类模拟器支持多节点协同仿真（如汽车 ECU 网络）、故障注入测试和回归验证，广泛应用于航空航天、医疗设备、通信基站等领域。 |
 |      高级语言虚拟机    | 高级语言虚拟机（如 JVM、.NET CLR、V8 JavaScript Engine、WebAssembly Runtime）提供语言无关的运行时环境，实现“一次编写，到处运行”。JVM 将 Java 字节码翻译为本地指令，支持垃圾回收、即时编译（JIT）、安全管理；WASM 则在浏览器中提供接近原生性能的沙箱执行环境，支持 C/C++/Rust 等语言运行于 Web。这类虚拟机通过抽象底层硬件差异，提升开发效率与跨平台兼容性，是现代软件生态的核心基础设施。 |
+
+!!! question "随堂测验"
+
+    [>> 【点击进入随堂测验】2-3 分钟小测，快速巩固 ☄](https://ima.qq.com/quiz?quizId=QWFARxqeKBU1aF3kcFfrT5nHGfWBd3n8dWV0S6Af2fAD)
