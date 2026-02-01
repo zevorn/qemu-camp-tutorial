@@ -14,5 +14,5 @@
 
 [learning-c]: stage0/learning-c.md
 [learning-rust]: stage0/learning-rust.md
-[g233-model]: stage1/g233-model.md
-[gpgpu-model]: stage1/gpgpu-model.md
+[g233-model]: stage1/soc/index.md
+[gpgpu-model]: stage1/gpu/index.md

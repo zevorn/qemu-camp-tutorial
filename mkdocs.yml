@@ -176,14 +176,16 @@ nav:
     - 介绍页: exercise/index.md
     - QEMU 训练营 2026:
       - 训练营介绍: exercise/2026/index.md
-      - 基础习题:
-        - 习题介绍: exercise/2026/stage0/index.md
-        - C 习题: exercise/2026/stage0/learning-c.md
-        - Rust 习题: exercise/2026/stage0/learning-rust.md
-      - 专业实验:
-        - 实验介绍: exercise/2026/stage1/index.md
-        - CPU 建模实验: exercise/2026/stage1/cpu-model.md
-        - GPU 建模实验: exercise/2026/stage1/gpu-model.md
+      - 基础阶段 C 实验: exercise/2026/stage0/learning-c.md
+      - 基础阶段 Rust 实验: exercise/2026/stage0/learning-rust.md
+      - 专业阶段 SOC 实验:
+        - 实验介绍: exercise/2026/stage1/soc/index.md
+        - SOC 实验手册: exercise/2026/stage1/soc/g233-exper-manual.md
+        - SOC 硬件手册: exercise/2026/stage1/soc/g233-datasheet.md
+      - 专业阶段 GPU 实验:
+        - 实验介绍: exercise/2026/stage1/gpu/index.md
+        - GPU 实验手册: exercise/2026/stage1/gpu/gpu-exper-manual.md
+        - GPU 硬件手册: exercise/2026/stage1/gpu/gpu-datasheet.md
   - 博客:
     - 介绍页: blogs/index.md
     - QEMU 训练营 2025 专业阶段实验解析: blogs/qemu-camp-2025-stage2-note.md
