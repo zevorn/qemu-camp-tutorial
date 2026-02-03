@@ -1,4 +1,4 @@
-# 聚焦开源与云原生！GTOC&CNB 首次线下 Meetup 邀您共赴技术盛宴
+# 聚焦开源与云原生！GTOC&CNB 首次线下 Meetup 完美收官
 
 !!! note "主要贡献者"
 
