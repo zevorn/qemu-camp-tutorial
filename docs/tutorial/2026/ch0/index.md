@@ -24,15 +24,15 @@
 
 !!! note "基础知识"
 
-    [Step1: 搭建 QEMU C 开发环境][qemu-c-env-link]
+    [搭建 QEMU C 开发环境][qemu-c-env-link]
 
-    [Step1: 搭建 QEMU Rust 开发环境（可选）][qemu-rust-env-link]
+    [搭建 QEMU Rust 开发环境（可选）][qemu-rust-env-link]
 
-    [Step2: QEMU 编译构建文档][qemu-build-link]
+    [QEMU 编译构建文档][qemu-build-link]
 
-    [Step3: 从零开始的 RISC-V 模拟器开发（QEMU）][risc-sim-link]
+    [从零开始的 RISC-V 模拟器开发（QEMU）][risc-sim-link]
 
-    [Step4: QEMU 训练营 2025 | 格维开源社区][qemu-camp-2025-link]
+    [QEMU 训练营 2025 | 格维开源社区][qemu-camp-2025-link]
 
 ### QEMU 知识库
 
