@@ -4,6 +4,7 @@
     var SLIDE_MODE_ATTR = "data-ppt-mode";
     var SLIDE_MODE_VALUE = "slides";
     var RESIZE_DEBOUNCE_MS = 150;
+    var SESSION_KEY = "ppt-slide-state";
     var DRAW_COLOR = "#e53935";
     var DRAW_WIDTH = 3;
     var ERASER_WIDTH = 16;
@@ -27,11 +28,7 @@
     }
 
     function getViewportHeight() {
-        var header = document.querySelector(".md-header");
-        var headerHeight = header ? header.offsetHeight : 0;
-        var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-        var padding = 24;
-        return Math.max(360, viewportHeight - headerHeight - padding);
+        return window.innerHeight || document.documentElement.clientHeight || 360;
     }
 
     function scheduleFrame(callback) {
@@ -61,6 +58,31 @@
     function cloneForSlide(node) {
         var clone = node.cloneNode(true);
         return sanitizeClone(clone);
+    }
+
+    function applyPptLines(container) {
+        var targets = container.querySelectorAll("[data-ppt-lines]");
+        targets.forEach(function (el) {
+            var lines = parseInt(el.getAttribute("data-ppt-lines"), 10);
+            if (isNaN(lines) || lines <= 0) {
+                return;
+            }
+            var pre = el.tagName.toLowerCase() === "pre"
+                ? el
+                : el.querySelector("pre");
+            if (!pre) {
+                return;
+            }
+            var code = pre.querySelector("code");
+            var target = code || pre;
+            var cs = window.getComputedStyle(target);
+            var lh = parseFloat(cs.lineHeight);
+            if (isNaN(lh)) {
+                lh = (parseFloat(cs.fontSize) || 14) * 1.4;
+            }
+            pre.style.maxHeight = (lh * lines) + "px";
+            pre.style.overflow = "auto";
+        });
     }
 
     function normalizeLooseTextNodes(article) {
@@ -93,12 +115,9 @@
             return [];
         }
 
-        var titleSlide = document.createElement("section");
-        titleSlide.className = "ppt-slide";
-
         var slides = [];
-        var currentSlide = null;
-        var foundSection = false;
+        var currentSlide = document.createElement("section");
+        currentSlide.className = "ppt-slide";
 
         elements.forEach(function (node) {
             if (node.nodeType !== 1) {
@@ -108,33 +127,21 @@
                 return;
             }
 
-            var tag = node.tagName.toLowerCase();
-            if (tag === "h2" || tag === "h3") {
-                if (!foundSection) {
-                    if (titleSlide.children.length > 0) {
-                        slides.push(titleSlide);
-                    }
-                    foundSection = true;
+            // <hr> is the page break marker (Markdown ---)
+            if (node.tagName.toLowerCase() === "hr") {
+                if (currentSlide.children.length > 0) {
+                    slides.push(currentSlide);
                 }
                 currentSlide = document.createElement("section");
                 currentSlide.className = "ppt-slide";
-                currentSlide.appendChild(cloneForSlide(node));
-                slides.push(currentSlide);
                 return;
             }
 
-            if (!foundSection) {
-                titleSlide.appendChild(cloneForSlide(node));
-                return;
-            }
-
-            if (currentSlide) {
-                currentSlide.appendChild(cloneForSlide(node));
-            }
+            currentSlide.appendChild(cloneForSlide(node));
         });
 
-        if (!foundSection) {
-            slides = [titleSlide];
+        if (currentSlide.children.length > 0) {
+            slides.push(currentSlide);
         }
 
         return slides;
@@ -213,26 +220,10 @@
         deck.appendChild(overlay);
         deck.appendChild(tools);
 
-        var controls = document.createElement("div");
-        controls.className = "ppt-controls";
-
-        var prev = document.createElement("button");
-        prev.type = "button";
-        prev.className = "ppt-btn";
-        prev.textContent = "Prev";
-
         var counter = document.createElement("span");
         counter.className = "ppt-counter";
 
-        var next = document.createElement("button");
-        next.type = "button";
-        next.className = "ppt-btn";
-        next.textContent = "Next";
-
-        controls.appendChild(prev);
-        controls.appendChild(counter);
-        controls.appendChild(next);
-        deck.appendChild(controls);
+        deck.appendChild(counter);
 
         return {
             deck: deck,
@@ -246,8 +237,6 @@
             undoBtn: undoBtn,
             redoBtn: redoBtn,
             clearBtn: clearBtn,
-            prev: prev,
-            next: next,
             counter: counter
         };
     }
@@ -465,6 +454,15 @@
         state.canvas.addEventListener("pointercancel", function () {
             state.isDrawing = false;
         });
+
+        // Forward wheel events to active slide so content scrolls in draw/erase mode
+        state.deckInfo.overlay.addEventListener("wheel", function (event) {
+            var slide = state.deckInfo.slides[state.activeIndex];
+            if (slide) {
+                slide.scrollTop += event.deltaY;
+                event.preventDefault();
+            }
+        }, { passive: false });
     }
 
     function rebuildSlides(state) {
@@ -474,6 +472,32 @@
             state.deckInfo.slidesContainer.appendChild(slide);
         });
         state.deckInfo.slides = slides;
+        applyPptLines(state.deckInfo.slidesContainer);
+    }
+
+    function saveSlideDrawing(state) {
+        var idx = state.activeIndex;
+        if (state.canvas) {
+            state.slideDrawings[idx] = snapshotCanvas(state);
+        }
+        state.slideUndoStacks[idx] = state.undoStack;
+        state.slideRedoStacks[idx] = state.redoStack;
+    }
+
+    function loadSlideDrawing(state, index) {
+        state.undoStack = state.slideUndoStacks[index] || [];
+        state.redoStack = state.slideRedoStacks[index] || [];
+        updateHistoryButtons(state);
+
+        if (!state.canvas) {
+            return;
+        }
+        var snapshot = state.slideDrawings[index];
+        if (snapshot) {
+            restoreSnapshot(state, snapshot);
+        } else {
+            state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+        }
     }
 
     function setActiveSlide(state, index) {
@@ -482,6 +506,12 @@
             return;
         }
         var clamped = Math.max(0, Math.min(index, slides.length - 1));
+
+        // Save current slide drawing before switching
+        if (state.canvas && state.activeIndex !== clamped) {
+            saveSlideDrawing(state);
+        }
+
         slides.forEach(function (slide, idx) {
             if (idx === clamped) {
                 slide.classList.add("is-active");
@@ -493,13 +523,20 @@
                 slide.setAttribute("aria-hidden", "true");
             }
         });
+
+        var prevIndex = state.activeIndex;
         state.activeIndex = clamped;
         state.deckInfo.counter.textContent = String(clamped + 1) + " / " + String(slides.length);
-        state.deckInfo.prev.disabled = clamped === 0;
-        state.deckInfo.next.disabled = clamped === slides.length - 1;
-        if (state.enabled && state.tool !== "pointer") {
-            setToolActive(state, "pointer");
+
+        if (state.enabled) {
+            savePptState(true, clamped);
         }
+
+        // Restore target slide drawing
+        if (state.canvas && prevIndex !== clamped) {
+            loadSlideDrawing(state, clamped);
+        }
+
     }
 
     function prepareSlides(state) {
@@ -508,6 +545,34 @@
         scheduleFrame(function () {
             resizeCanvas(state);
         });
+    }
+
+    function savePptState(enabled, index) {
+        try {
+            if (enabled) {
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+                    path: location.pathname,
+                    index: index || 0
+                }));
+            } else {
+                sessionStorage.removeItem(SESSION_KEY);
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    function loadPptState() {
+        try {
+            var raw = sessionStorage.getItem(SESSION_KEY);
+            if (!raw) {
+                return null;
+            }
+            var data = JSON.parse(raw);
+            if (data.path === location.pathname) {
+                return data;
+            }
+            sessionStorage.removeItem(SESSION_KEY);
+        } catch (e) { /* ignore */ }
+        return null;
     }
 
     function setMode(state, enabled) {
@@ -522,6 +587,7 @@
             state.deckInfo.deck.setAttribute("aria-hidden", "true");
         }
         state.toggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+        savePptState(enabled, state.activeIndex);
     }
 
     function bindKeyboard() {
@@ -613,6 +679,9 @@
             resizeBound: false,
             clearFlashTimer: null,
             strokeSnapshot: null,
+            slideDrawings: {},
+            slideUndoStacks: {},
+            slideRedoStacks: {},
             undoStack: [],
             redoStack: []
         };
@@ -623,21 +692,13 @@
             setMode(state, !state.enabled);
         });
 
-        deckInfo.prev.addEventListener("click", function () {
-            if (!state.enabled) {
-                return;
-            }
-            setActiveSlide(state, state.activeIndex - 1);
-        });
-
-        deckInfo.next.addEventListener("click", function () {
-            if (!state.enabled) {
-                return;
-            }
-            setActiveSlide(state, state.activeIndex + 1);
-        });
-
-        setMode(state, false);
+        var saved = loadPptState();
+        if (saved) {
+            state.activeIndex = saved.index || 0;
+            setMode(state, true);
+        } else {
+            setMode(state, false);
+        }
         bindKeyboard();
         bindResize(state);
         bindDrawing(state);

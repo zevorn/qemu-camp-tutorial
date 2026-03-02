@@ -114,7 +114,9 @@
     pointer-events: none;
     height: 100%;
     overflow: auto;
-    padding: 2rem 2.5rem 4.5rem;
+    padding: 2rem 2.5rem;
+    font-size: 1.6em;
+    text-align: left;
     border-radius: 0.6rem;
     border: 1px solid var(--md-default-fg-color--lightest);
     background: var(--md-default-bg-color);
@@ -129,54 +131,65 @@
 
 .ppt-slide img {
     max-width: 100%;
-    max-height: calc(var(--ppt-slide-height, 70vh) - 8rem);
+    max-height: calc(100vh - 8rem);
     height: auto;
     object-fit: contain;
 }
 
 .ppt-slide pre {
-    max-height: calc(var(--ppt-slide-height, 70vh) - 10rem);
+    max-height: calc(100vh - 10rem);
     overflow: auto;
+    line-height: 1.3;
 }
 
-.ppt-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    position: absolute;
-    left: 2rem;
-    right: 2rem;
-    bottom: 1.5rem;
-    z-index: 5;
+.ppt-slide pre code {
+    line-height: inherit;
 }
 
-.ppt-btn {
-    border: 0;
-    border-radius: 0.3rem;
-    background: var(--md-primary-fg-color);
-    color: var(--md-primary-bg-color);
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-}
-
-.ppt-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.ppt-slide .admonition,
+.ppt-slide details,
+.ppt-slide .md-typeset .admonition,
+.ppt-slide .md-typeset details {
+    font-size: inherit;
 }
 
 .ppt-counter {
+    position: absolute;
+    bottom: 1rem;
+    left: 2.5rem;
+    right: 2.5rem;
+    text-align: center;
     font-size: 0.9em;
     color: var(--md-default-fg-color--light);
+    z-index: 5;
+    pointer-events: none;
 }
 
+body[data-ppt-mode="slides"] {
+    overflow: hidden;
+}
+
+body[data-ppt-mode="slides"] .md-header,
 body[data-ppt-mode="slides"] .md-sidebar--primary,
-body[data-ppt-mode="slides"] .md-sidebar--secondary {
+body[data-ppt-mode="slides"] .md-sidebar--secondary,
+body[data-ppt-mode="slides"] .md-footer,
+body[data-ppt-mode="slides"] .md-tabs {
     display: none;
 }
 
 body[data-ppt-mode="slides"] .md-content {
     max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body[data-ppt-mode="slides"] .ppt-slide,
+body[data-ppt-mode="slides"] .ppt-slide p,
+body[data-ppt-mode="slides"] .ppt-slide li,
+body[data-ppt-mode="slides"] .ppt-slide td,
+body[data-ppt-mode="slides"] .ppt-slide .md-typeset,
+body[data-ppt-mode="slides"] .ppt-slide .admonition {
+    text-align: left;
 }
 
 body[data-ppt-mode="slides"] article.md-content__inner > :not(h1):not(.ppt-deck) {
@@ -185,4 +198,11 @@ body[data-ppt-mode="slides"] article.md-content__inner > :not(h1):not(.ppt-deck)
 
 body[data-ppt-mode="slides"] .ppt-deck {
     display: block;
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: var(--md-default-bg-color);
 }
