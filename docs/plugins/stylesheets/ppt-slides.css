@@ -54,12 +54,39 @@
 
 .ppt-tools {
     position: absolute;
-    top: 1rem;
+    top: 0;
     right: 1rem;
     display: flex;
     gap: 0.5rem;
     z-index: 4;
     pointer-events: auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-md-color-scheme="slate"] .ppt-tools {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.ppt-tools::after {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    right: -1rem;
+    bottom: -2.5rem;
+    height: 2.5rem;
+}
+
+.ppt-tools:hover {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .ppt-tool {
@@ -68,16 +95,29 @@
     gap: 0.35rem;
     border: 0;
     border-radius: 0.3rem;
-    background: var(--md-default-fg-color--lightest);
+    background: rgba(0, 0, 0, 0.08);
     color: var(--md-default-fg-color);
     padding: 0.3rem 0.6rem;
     cursor: pointer;
     font-size: 0.85em;
+    transition: background 0.2s ease;
+}
+
+[data-md-color-scheme="slate"] .ppt-tool {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .ppt-tool svg {
     width: 1em;
     height: 1em;
+}
+
+.ppt-tool:hover {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+[data-md-color-scheme="slate"] .ppt-tool:hover {
+    background: rgba(255, 255, 255, 0.22);
 }
 
 .ppt-tool.is-active {
