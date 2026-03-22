@@ -18,6 +18,8 @@
 
     [GPU 发展历史][gpu-history-local-link]
 
+    [GPGPU 学习资料][gpgpu-resources-local-link]
+
     [GPU 架构演化史 - zartbot][gpu-history-link]
 
     [RISC-V 体系结构编程与实践(第 2 版) - 笨叔][riscv-arch-book-link]
@@ -25,6 +27,8 @@
 ### QEMU 基础知识
 
 !!! note "基础知识"
+
+    [QEMU 编译开发环境搭建][qemu-dev-env-local-link]
 
     [一键启动 QEMU 开发环境][qemu-cnb-link]
 
@@ -66,6 +70,8 @@
 [qemu-build-link]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-system.html
 [qemu-c-env-link]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-environment.html
 [qemu-rust-env-link]: https://hust-open-atom-club.github.io/rust-for-qemu-insides/articles/ch0/02-compile-and-debug/
+[qemu-dev-env-local-link]: qemu-dev-env.md
+[gpgpu-resources-local-link]: gpgpu-resources.md
 [gpu-history-local-link]: gpu-history.md
 [gpu-history-link]: https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzUxNzQ5MTExNw==&action=getalbum&album_id=2538479717163761664&scene=126&sessionid=1767843472496#wechat_redirect
 [riscv-arch-book-link]: https://weread.qq.com/web/reader/93d32980813ab937ag01027b
