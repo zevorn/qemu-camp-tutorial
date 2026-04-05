@@ -1,13 +1,8 @@
 # QEMU 训练营基础阶段 C 语言
-Hello，欢迎各位来到 QEMU 训练营。这是 QEMU 训练营的起始阶段，大家不如立一个 flag，比如“我一定要完成 QEMU 训练营全部流程，不要半途而废”。
 
-[qemu_camp_basic_c](https://classroom.github.com/a/AgHjM77H) 是通过 GitHub Classroom 发放的 QEMU 训练营基础阶段 C 语言练习仓库。
+基础阶段 C 语言练习仓库 [qemu_camp_basic_c](https://classroom.github.com/a/AgHjM77H)，整合了 OpenCamp 基础和进阶两个阶段的 C 题目，共 `40` 题。
 
-这个题库把 OpenCamp 原有的基础阶段和专业阶段 C 题目整合成了一套连续编号的练习，共 `40` 题。
-
-当前 C 语言部分的 GitHub Classroom 邀请链接是：
-
-- [https://classroom.github.com/a/AgHjM77H](https://classroom.github.com/a/AgHjM77H)
+GitHub Classroom 邀请链接：[https://classroom.github.com/a/AgHjM77H](https://classroom.github.com/a/AgHjM77H)
 
 ## 快速开始
 
@@ -161,18 +156,9 @@ make clean                # 清理检查器和构建产物
 
 ## 自动评测说明
 
-当前仓库已经接入 GitHub Actions 自动评测流程。推送到主分支后，工作流通常会：
+仓库已接入 GitHub Actions。push 到主分支后会自动编译 `c-checker`、执行 `check-all`、汇总结果并回传成绩（需配置 OpenCamp secrets）。PR 只跑评测，不回传。
 
-1. 编译 `c-checker`
-2. 执行 `./c-checker check-all`
-3. 生成测试汇总结果
-4. 在配置好 OpenCamp 所需 secrets 后回传成绩
-
-`pull_request` 场景一般只执行评测，不做成绩回传。
-
-## 一句话总结
-
-如果你只想记住最重要的使用方式，可以直接按下面这个流程来：
+## 速览
 
 ```bash
 cd qemu_camp_basic_c
