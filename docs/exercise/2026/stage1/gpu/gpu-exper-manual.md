@@ -24,19 +24,30 @@ cargo install bindgen-cli
 
     GPGPU 方向使用 QTest 测试框架，测题在宿主机侧编译运行，**不需要** RISC-V 交叉编译工具链。
 
-第二步，clone 仓库到本地：
+第二步，点击 [GitHub Classroom 邀请链接][3] 加入实验，系统会自动在组织下为你创建专属仓库并赋予 maintainer 权限。
+
+!!! warning "注意"
+
+    请通过上方链接获取仓库，**不支持手动 fork**。
+
+第三步，clone 仓库到本地：
 
 ```bash
-git clone <你的仓库地址>
-cd qemu
+git clone git@github.com:gevico/qemu-camp-2026-exper-<你的 github 用户名>.git
 ```
 
-第三步，配置并编译：
+第四步，添加上游远程仓库，用于同步上游代码变更：
 
 ```bash
-mkdir build && cd build
-../configure --target-list=riscv64-softmmu
-ninja
+git remote add upstream git@github.com:gevico/qemu-camp-2026-exper.git
+git pull upstream main --rebase
+```
+
+第五步，配置并编译：
+
+```bash
+make -f Makefile.camp configure
+make -f Makefile.camp build
 ```
 
 ## 提交代码
@@ -273,4 +284,5 @@ GPGPU 方向的全部实验围绕虚拟 PCIe 3D 加速器的设备建模与 SIMT
 
     E2M1 的 `f32 → e2m1` 转换是手写实现（非 softfloat），你需要理解 E2M1 的 4-bit 格式并用 FP32 位模式阈值实现正确的舍入与饱和逻辑。
 
+[3]: https://classroom.github.com/a/hwWFrmo_
 [5]: gpu-datasheet.md
