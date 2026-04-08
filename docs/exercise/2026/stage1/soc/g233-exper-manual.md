@@ -268,7 +268,7 @@ gdb -ex "target remote :1234" build/qemu-system-riscv64
 | 源码路径 | `tests/gevico/qtest/test-spi-cs.c` |
 | 外设 | SPI 控制器 + W25X16 (CS0, 2MB) + W25X32 (CS1, 4MB) |
 | 功能描述 | 验证双 Flash 片选控制、独立操作和交叉操作 |
-| 详细规格 | [G233 SoC 硬件手册][5] §9.3.5, §10 |
+| 详细规格 | [G233 SoC 硬件手册][5] §9.3.2, §10 |
 
 | 测试用例 | 测试内容 |
 | --- | --- |
