@@ -31,7 +31,7 @@ qemu-system-riscv64 -M virt -s -S -nographic
     - virt Machine 初始化与类型注册路径
     - 加载 OpenSBI 与客户机程序到内存
     - vCPU 第一条指令的启动路径
-    - 主循环与 IO 线程的职责划分
+    - 主循环与线程模型（vCPU 线程、主线程、IO 线程）
 
 !!! tip "阅读提示"
 
@@ -459,11 +459,23 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
 
     尝试分析 virt Machine 的串口设备模型是如何初始化的，请结合 memory region 分析。
 
-## 主循环与 IO 线程
+## 主循环与线程模型
 
-以上我们沿着初始化路径，从 Machine 创建、固件加载一直追踪到 vCPU 的第一条指令。但 QEMU 的工作并不止步于启动——初始化完成后，QEMU 还需要持续运行一个事件循环来响应定时器、I/O 和用户操作。
+以上我们沿着初始化路径，从 Machine 创建、固件加载一直追踪到 vCPU 的第一条指令。但 QEMU 的工作并不止步于启动——初始化完成后，QEMU 还需要持续运行来执行客户机指令、响应 I/O 和处理用户操作。
 
-完成初始化后，QEMU 会进入主循环，入口在 `system/runstate.c` 的 `qemu_main_loop()`，它不断调用 `main_loop_wait()` 处理事件，直到收到退出条件：
+在展开源码之前，先理清 QEMU 运行时涉及的几个核心概念：
+
+!!! note “QEMU 线程模型”
+
+    - **vCPU（虚拟 CPU）**：QEMU 模拟的处理器核心。每个 vCPU 对应宿主机上的一个**vCPU 线程**，负责执行客户机指令（通过 TCG 翻译或 KVM 硬件加速）。如果启动参数指定了 `-smp 4`，QEMU 就会创建 4 个 vCPU 线程。
+    - **主线程（Main Thread）**：QEMU 进程的初始线程。完成所有初始化工作后，进入**主循环（Main Loop）**，负责全局事件调度——包括定时器、monitor 命令、UI 事件等。主循环是 QEMU 的「事件泵」。
+    - **IO 线程（IOThread）**：可选的独立线程，用于将 I/O 密集的设备（如块设备、网络设备）的事件处理从主线程中分离出去，降低主线程负载，提升 I/O 并发性能。
+
+    简单来说：**vCPU 线程跑指令，主线程调度事件，IO 线程分担 I/O**。
+
+### 主循环
+
+完成初始化后，主线程进入主循环，入口在 `system/runstate.c` 的 `qemu_main_loop()`，它不断调用 `main_loop_wait()` 处理事件，直到收到退出条件：
 
 ```c
 /* system/runstate.c */
@@ -479,7 +491,7 @@ int qemu_main_loop(void)
 }
 ```
 
-主循环里，`main_loop_wait()` 会根据定时器截止时间计算 poll 超时，等待宿主事件后再运行已到期的定时器：
+`main_loop_wait()` 会根据定时器截止时间计算 poll 超时，等待宿主事件后再运行已到期的定时器：
 
 ```c
 /* util/main-loop.c */
@@ -496,9 +508,11 @@ void main_loop_wait(int nonblocking)
 }
 ```
 
-如果你把它理解成”QEMU 的事件泵”，就很容易把这段逻辑和设备的定时器、BH（Bottom Half，延迟执行的回调函数，用于将耗时操作从中断上下文推迟到安全的时机执行）以及 monitor 事件联系起来。
+把主循环理解成「事件泵」，就很容易把这段逻辑和设备的定时器、BH（Bottom Half，延迟执行的回调函数，用于将耗时操作推迟到安全的时机执行）以及 monitor 命令联系起来。
 
-IO-Thread 则用于把 I/O 事件从主线程拆出去，它是一个 QOM 对象（`TYPE_IOTHREAD`），内部维护自己的 `AioContext`（QEMU 的异步 I/O 事件循环上下文，管理文件描述符监听、定时器和 BH 调度）与 `GMainContext`。核心运行循环在 `iothread_run()`：
+### IO 线程
+
+IO 线程用于把 I/O 事件从主线程拆出去。它是一个 QOM 对象（`TYPE_IOTHREAD`），内部维护自己的 `AioContext`（异步 I/O 事件循环上下文，管理文件描述符监听、定时器和 BH 调度）与 `GMainContext`。核心运行循环在 `iothread_run()`：
 
 ```c
 /* iothread.c */
@@ -517,7 +531,7 @@ static void *iothread_run(void *opaque)
 }
 ```
 
-这意味着：主线程负责全局事件与定时器调度，而 I/O 密集的设备（例如 block、virtio）可以绑定到指定的 IO-Thread，在它自己的 `AioContext` 中处理事件。这样既能降低主线程负载，又能让 I/O 路径有更稳定的时序与并发控制。
+I/O 密集的设备（例如 block、virtio）可以通过启动参数绑定到指定的 IO 线程，在它自己的 `AioContext` 中处理事件，从而降低主线程负载，让 I/O 路径有更稳定的时序与并发控制。
 
 !!! question "随堂测验"
 
