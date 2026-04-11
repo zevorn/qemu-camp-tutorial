@@ -10,3 +10,15 @@
     - QEMU 的常用参数与启动流程
     - QEMU 的核心概念：QOM、MemoryRegion 等
     - QEMU 常用的调试手段
+
+## 配套实验
+
+基础阶段提供 C 语言和 Rust 两个方向的编程练习，二选一完成即可：
+
+- [基础阶段实验总览](../../../exercise/2026/stage0/index.md)
+- [C 语言习题](../../../exercise/2026/stage0/learning-c.md)
+- [Rust 习题](../../../exercise/2026/stage0/learning-rust.md)
+
+!!! warning "晋级条件"
+
+    满分通关任一方向的基础阶段实验，即可进入专业阶段。

@@ -255,7 +255,7 @@ make -j"$(nproc)"
 
 !!! note "详细教程"
 
-    更多关于 CNB 云原生开发的介绍请参考博客文章：[基于 CNB 一键启动 QEMU 开发环境](../../../blogs/qemu-cnb-dev.md)。
+    更多关于 CNB 云原生开发的介绍请参考博客文章：[基于 CNB 一键启动 QEMU 开发环境](../../../blogs/misc/qemu-cnb-dev.md)。
 
 
 [qemu-build-doc]: https://qemu.readthedocs.io/en/latest/devel/build-system.html

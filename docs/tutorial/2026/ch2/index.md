@@ -11,3 +11,17 @@
     - QEMU GPGPU 建模：GPGPU 体系结构与相关外设等
     - Rust for QEMU：外设建模、测试与 FFI 原理机制
 
+## 配套实验
+
+专业阶段提供四个实验方向，四选一完成即可：
+
+- [专业阶段实验总览](../../../exercise/2026/stage1/index.md)
+- [CPU 建模实验](../../../exercise/2026/stage1/cpu/index.md)
+- [SoC 建模实验](../../../exercise/2026/stage1/soc/index.md)
+- [GPGPU 建模实验](../../../exercise/2026/stage1/gpu/index.md)
+- [Rust 建模实验](../../../exercise/2026/stage1/rust/index.md)
+
+!!! warning "晋级条件"
+
+    满分通关任一方向的专业阶段实验，并贡献一篇专业阶段总结博客到本站博客专栏，即可进入项目阶段。详见 [晋级项目阶段](../../../exercise/2026/stage1/index.md#晋级项目阶段)。
+

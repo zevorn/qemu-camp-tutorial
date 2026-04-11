@@ -180,32 +180,41 @@ nav:
     - 介绍页: exercise/index.md
     - QEMU 训练营 2026:
       - 训练营介绍: exercise/2026/index.md
-      - 基础阶段 C 实验: exercise/2026/stage0/learning-c.md
-      - 基础阶段 Rust 实验: exercise/2026/stage0/learning-rust.md
-      - 专业阶段 CPU 实验:
-        - 实验介绍: exercise/2026/stage1/cpu/index.md
-        - CPU 实验手册: exercise/2026/stage1/cpu/cpu-exper-manual.md
-        - CPU 硬件手册: exercise/2026/stage1/cpu/cpu-datasheet.md
-      - 专业阶段 SOC 实验:
-        - 实验介绍: exercise/2026/stage1/soc/index.md
-        - SOC 实验手册: exercise/2026/stage1/soc/g233-exper-manual.md
-        - SOC 硬件手册: exercise/2026/stage1/soc/g233-datasheet.md
-      - 专业阶段 GPU 实验:
-        - 实验介绍: exercise/2026/stage1/gpu/index.md
-        - GPU 实验手册: exercise/2026/stage1/gpu/gpu-exper-manual.md
-        - GPU 硬件手册: exercise/2026/stage1/gpu/gpu-datasheet.md
-      - 专业阶段 Rust 实验:
-        - 实验介绍: exercise/2026/stage1/rust/index.md
-        - Rust 实验手册: exercise/2026/stage1/rust/rust-exper-manual.md
-        - Rust 编程指南: exercise/2026/stage1/rust/rust-lang-manual.md
+      - 基础阶段:
+        - 实验介绍: exercise/2026/stage0/index.md
+        - C 实验: exercise/2026/stage0/learning-c.md
+        - Rust 实验: exercise/2026/stage0/learning-rust.md
+      - 专业阶段:
+        - 实验介绍: exercise/2026/stage1/index.md
+        - CPU 实验:
+          - 实验介绍: exercise/2026/stage1/cpu/index.md
+          - CPU 实验手册: exercise/2026/stage1/cpu/cpu-exper-manual.md
+          - CPU 硬件手册: exercise/2026/stage1/cpu/cpu-datasheet.md
+        - SoC 实验:
+          - 实验介绍: exercise/2026/stage1/soc/index.md
+          - SoC 实验手册: exercise/2026/stage1/soc/g233-exper-manual.md
+          - SoC 硬件手册: exercise/2026/stage1/soc/g233-datasheet.md
+        - GPU 实验:
+          - 实验介绍: exercise/2026/stage1/gpu/index.md
+          - GPGPU 实验手册: exercise/2026/stage1/gpu/gpu-exper-manual.md
+          - GPGPU 硬件手册: exercise/2026/stage1/gpu/gpu-datasheet.md
+        - Rust 实验:
+          - 实验介绍: exercise/2026/stage1/rust/index.md
+          - Rust 实验手册: exercise/2026/stage1/rust/rust-exper-manual.md
+          - Rust 编程指南: exercise/2026/stage1/rust/rust-lang-manual.md
   - 博客:
     - 介绍页: blogs/index.md
-    - 如何参与 QEMU 邮件列表讨论: blogs/qemu-devel-email.md
-    - 一键启动 QEMU 云原生开发: blogs/qemu-cnb-dev.md
-    - QEMU 训练营 2025 专业阶段实验解析: blogs/qemu-camp-2025-stage2-note.md
-    - 浅析虚拟机软件仿真中的解释技术: blogs/simulater-interp.md
+    - 训练营 2026:
+      - 专业阶段总结 dingtao1: blogs/2026/qemu-camp-2026-dingtao1.md
+    - 训练营 2025:
+      - 专业阶段总结 LordaeronESZ: blogs/2025/qemu-camp-2025-LordaeronESZ.md
+    - 其他技术博客:
+      - 参与 QEMU 邮件列表讨论: blogs/misc/qemu-devel-email.md
+      - 一键 QEMU 云原生开发: blogs/misc/qemu-cnb-dev.md
+      - 虚拟机软件中的解释技术: blogs/misc/simulater-interp.md
   - 新闻:
     - 2026 年:
+      - 04 月 05 日: news/2026/qemu-camp-meetup-2026-04-05.md
       - 03 月 17 日: news/2026/qemu-camp-update-2026-03-17.md
       - 02 月 28 日: news/2026/qemu-camp-meetup-2026-02-28.md
       - 01 月 31 日: news/2026/qemu-camp-update-2026-01-31.md
