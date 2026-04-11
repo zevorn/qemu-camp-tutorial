@@ -20,13 +20,13 @@ QEMU 是一款功能强大的开源虚拟化和仿真软件，支持多种处理
 
 大体上 QEMU 常用的启动参数可以分为五类：主板配置参数、引导参数、存储设备参数、网络参数、显示和交互参数。考虑 QEMU 的启动参数众多，不建议大家死记硬背，而是常用常新，可以将本文作为手册，需要的时候查询一下即可。
 
-下面我们通过表格来介绍，主要罗列适用于 `qemu-system-*` 的启动参数。
+下面我们通过表格来介绍，主要罗列适用于 `qemu-system-*`（`*` 代表目标架构，如 `qemu-system-riscv64`、`qemu-system-aarch64` 等）的启动参数。
 
 **主板配置参数**：
 
 |       parameter       |   example   |     Description    |
 |          ---          |     ----    |        ----        |
-|  `-machine` or `-M`   | `-M virt`   | 选择机器或者主板的类型， `-M help` 可查询支持的主板 |
+|  `-machine` or `-M`   | `-M virt`   | 选择机器或者主板的类型（`virt` 是 QEMU 提供的通用虚拟主板，不对应真实硬件，专为虚拟化场景设计）， `-M help` 可查询支持的主板 |
 |  `-cpu`               | `-cpu rv64` | 选择 CPU 模型， `-cpu help` 可查询支持的 CPU 模型 |
 |  `-m`                 | `-m 2G`     | 设置内存大小，支持 M/G 单位，如 2048M |
 |  `-smp`               | `-smp 4`    | 配置 CPU 核心数/线程数 |
@@ -40,7 +40,7 @@ QEMU 是一款功能强大的开源虚拟化和仿真软件，支持多种处理
 |  `-kernel`            | `-kernel Image`           | 直接加载 Linux 内核镜像（direct Linux boot；不同架构常见镜像名不同，例如 x86 常见 `bzImage`，ARM/RISC-V 常见 `Image`） |
 |  `-initrd`            | `-initrd initrd.img`      | 指定初始化内存盘，加载 initramfs 或 initrd 文件系统 |
 |  `-append`            | `-append "console=ttyS0"` | 传递给内核的命令行参数（direct Linux boot 场景，通常与 `-kernel` 配合使用） |
-|  `-dtb`               | `-dtb kernel.dtb`         | 传递给内核的 DTB 镜像文件 |
+|  `-dtb`               | `-dtb kernel.dtb`         | 传递给内核的 DTB（Device Tree Blob，设备树二进制文件，用于描述硬件拓扑，供内核发现和配置设备）镜像文件 |
 
 
 **存储设备参数**：
@@ -63,12 +63,14 @@ QEMU 是一款功能强大的开源虚拟化和仿真软件，支持多种处理
 | `-nographic` |        -        | 禁用图形输出，并将串口 I/O（以及默认 monitor）重定向到当前终端；默认转义键为 `Ctrl+a`，可用 `Ctrl+a c` 在串口/monitor 间切换，`Ctrl+a x` 退出，`Ctrl+a h` 查看帮助 |
 | `-serial`    | `-serial stdio` | 将 guest 串口重定向到宿主字符设备（常见：`stdio`、`mon:stdio`、`file:run.log` 等） |
 | `-monitor`   | `-monitor none` | 重定向或禁用 HMP monitor；例如 `-monitor stdio` 将 monitor 放到当前终端，`-monitor none` 禁用默认 monitor |
-| `-s`         |        -        | 启用 gdbstub（等价于 `-gdb tcp::1234`） |
+| `-s`         |        -        | 启用 gdbstub（QEMU 内置的 GDB 远程调试服务端，等价于 `-gdb tcp::1234`） |
 | `-S`         |        -        | 启动时冻结 CPU，等待 gdb/monitor 继续执行 |
 
 ---
 
 ## OpenEuler 启动示例
+
+了解了常用参数的含义后，接下来我们用一个实际例子来演示如何组合这些参数启动一个真实的操作系统。
 
 我们以 OpenEuler RISC-V 24.03 为例进行介绍，获取相关镜像的方式如下：
 
@@ -106,9 +108,9 @@ cmd="qemu-system-riscv64 \
   -device qemu-xhci -usb -device usb-kbd -device usb-tablet"
 ```
 
-我们挑选几个前面没有介绍到的参数，来补充说明一下：
+我们挑选几个前面没有介绍到的参数，来补充说明一下。这个启动脚本使用了大量 VirtIO 设备——VirtIO 是一套专为虚拟化环境设计的 I/O 标准，客户机通过 VirtIO 驱动与宿主机高效通信，避免了模拟传统硬件的开销。
 
-`-machine virt,pflash0=pflash0,pflash1=pflash1,acpi=off`：选择 RISC-V 的 virt 虚拟主板；把名为 pflash0/pflash1 的块设备节点挂到主板的两片 pflash；关闭 ACPI。
+`-machine virt,pflash0=pflash0,pflash1=pflash1,acpi=off`：选择 RISC-V 的 virt 虚拟主板；把名为 pflash0/pflash1 的块设备节点挂到主板的两片 pflash（Parallel Flash，并行闪存，用于存放固件代码和变量）；关闭 ACPI。
 
 `-blockdev node-name=pflash0,driver=file,read-only=on,filename="$fw1"`：创建名为 pflash0 的块设备后端，来源是文件 fw1，并设为只读（固件代码）。
 

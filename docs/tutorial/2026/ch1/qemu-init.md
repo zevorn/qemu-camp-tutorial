@@ -12,9 +12,9 @@
 qemu-system-riscv64 -M virt -s -S -nographic
 ```
 
-这个命令让 QEMU 创建了一个 `virt` 机器模型，以 `-nographic` 模式运行，并开启了 gdbstub 远程调试功能。
+这个命令让 QEMU 创建了一个 `virt` 机器模型，以 `-nographic` 模式运行，并开启了 gdbstub（QEMU 内置的 GDB 远程调试服务端）远程调试功能。
 
-其中，`-s` 会让 QEMU 在 TCP 1234 端口等待 gdb 连接，`-S` 会让 guest 在 gdb 明确发出继续命令前保持暂停；对于 `virt`（以及 `sifive_u`）这类机器，不指定 `-bios` 时默认等同于 `-bios default`，会自动加载随 QEMU 发布的默认 OpenSBI 固件。你可以使用任意支持 RISC-V 的 gdb（例如 `riscv64-elf-gdb`）连接该 gdbstub。
+其中，`-s` 会让 QEMU 在 TCP 1234 端口等待 gdb 连接，`-S` 会让 guest 在 gdb 明确发出继续命令前保持暂停；对于 `virt`（以及 `sifive_u`）这类机器，不指定 `-bios` 时默认等同于 `-bios default`，会自动加载随 QEMU 发布的默认 OpenSBI（RISC-V 的开源 SBI 固件实现，负责在机器启动时完成硬件初始化并引导操作系统）固件。你可以使用任意支持 RISC-V 的 gdb（例如 `riscv64-elf-gdb`）连接该 gdbstub。
 
 !!! note
     我们先观察 virt Machine 是如何创建的，然后再探讨一下 QEMU 是如何加载 OpenSBI 的二进制程序到 virt Machine 的内存里面的，最后再看 QEMU 是如何初始化 vCPU 指向第一条 Guest 指令的。
@@ -31,7 +31,7 @@ qemu-system-riscv64 -M virt -s -S -nographic
     - virt Machine 初始化与类型注册路径
     - 加载 OpenSBI 与客户机程序到内存
     - vCPU 第一条指令的启动路径
-    - 主循环与 IO 线程的职责划分
+    - 主循环与线程模型（vCPU 线程、主线程、IO 线程）
 
 !!! tip "阅读提示"
 
@@ -217,6 +217,7 @@ static void virt_machine_init(MachineState *machine)
             exit(1);
         }
 
+        /* hartid: RISC-V hardware thread ID, each hart is a hardware execution context */
         base_hartid = riscv_socket_first_hartid(machine, i);
         if (base_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
@@ -372,6 +373,8 @@ char *riscv_find_firmware(const char *firmware_filename,
 
 ## vCPU 执行的第一条指令
 
+现在我们知道了固件是如何被加载到内存中的。接下来的问题是：vCPU（虚拟 CPU，QEMU 模拟的处理器核心）启动后执行的第一条指令在哪里？我们可以通过 GDB 远程连接到 QEMU 的 gdbstub 来观察这一过程。
+
 如果你使用 `riscv64-elf-gdb` 远程连接上 QEMU 以后，你会发现：
 
 ```bash
@@ -423,7 +426,7 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
     ...
 #ifndef CONFIG_USER_ONLY
     env->misa_mxl = mcc->def->misa_mxl_max;
-    env->priv = PRV_M;
+    env->priv = PRV_M;  /* PRV_M: RISC-V Machine mode, the highest privilege level */
     env->mstatus &= ~(MSTATUS_MIE | MSTATUS_MPRV);
     if (env->misa_mxl > MXL_RV32) {
         /*
@@ -434,7 +437,7 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
     }
     env->mcause = 0;
     env->miclaim = MIP_SGEIP;
-    env->pc = env->resetvec;  /* resetvec is set in resetvec_cb */
+    env->pc = env->resetvec;  /* resetvec: reset vector, the address of the first instruction after CPU reset */
     env->bins = 0;
     env->two_stage_lookup = false;
 
@@ -456,9 +459,25 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
 
     尝试分析 virt Machine 的串口设备模型是如何初始化的，请结合 memory region 分析。
 
-## 主循环与 IO 线程
+## 主循环与线程模型
 
-完成初始化后，QEMU 会进入主循环，入口在 `system/runstate.c` 的 `qemu_main_loop()`，它不断调用 `main_loop_wait()` 处理事件，直到收到退出条件：
+以上我们沿着初始化路径，从 Machine 创建、固件加载一直追踪到 vCPU 的第一条指令。但 QEMU 的工作并不止步于启动——初始化完成后，QEMU 还需要持续运行来执行客户机指令、响应 I/O 和处理用户操作。
+
+在展开源码之前，先理清 QEMU 运行时涉及的几个核心概念：
+
+<!-- autocorrect-disable -->
+!!! note “QEMU 线程模型”
+<!-- autocorrect-enable -->
+
+    - **vCPU（虚拟 CPU）**：QEMU 模拟的处理器核心。每个 vCPU 对应宿主机上的一个**vCPU 线程**，负责执行客户机指令（通过 TCG 翻译或 KVM 硬件加速）。如果启动参数指定了 `-smp 4`，QEMU 就会创建 4 个 vCPU 线程。
+    - **主线程（Main Thread）**：QEMU 进程的初始线程。完成所有初始化工作后，进入**主循环（Main Loop）**，负责全局事件调度——包括定时器、monitor 命令、UI 事件等。主循环是 QEMU 的「事件泵」。
+    - **IO 线程（IOThread）**：可选的独立线程，用于将 I/O 密集的设备（如块设备、网络设备）的事件处理从主线程中分离出去，降低主线程负载，提升 I/O 并发性能。
+
+    简单来说：**vCPU 线程跑指令，主线程调度事件，IO 线程分担 I/O**。
+
+### 主循环
+
+完成初始化后，主线程进入主循环，入口在 `system/runstate.c` 的 `qemu_main_loop()`，它不断调用 `main_loop_wait()` 处理事件，直到收到退出条件：
 
 ```c
 /* system/runstate.c */
@@ -474,7 +493,7 @@ int qemu_main_loop(void)
 }
 ```
 
-主循环里，`main_loop_wait()` 会根据定时器截止时间计算 poll 超时，等待宿主事件后再运行已到期的定时器：
+`main_loop_wait()` 会根据定时器截止时间计算 poll 超时，等待宿主事件后再运行已到期的定时器：
 
 ```c
 /* util/main-loop.c */
@@ -491,9 +510,11 @@ void main_loop_wait(int nonblocking)
 }
 ```
 
-如果你把它理解成“QEMU 的事件泵”，就很容易把这段逻辑和设备的定时器、BH（bottom half）以及 monitor 事件联系起来。
+把主循环理解成「事件泵」，就很容易把这段逻辑和设备的定时器、BH（Bottom Half，延迟执行的回调函数，用于将耗时操作推迟到安全的时机执行）以及 monitor 命令联系起来。
 
-IO-Thread 则用于把 I/O 事件从主线程拆出去，它是一个 QOM 对象（`TYPE_IOTHREAD`），内部维护自己的 `AioContext` 与 `GMainContext`。核心运行循环在 `iothread_run()`：
+### IO 线程
+
+IO 线程用于把 I/O 事件从主线程拆出去。它是一个 QOM 对象（`TYPE_IOTHREAD`），内部维护自己的 `AioContext`（异步 I/O 事件循环上下文，管理文件描述符监听、定时器和 BH 调度）与 `GMainContext`。核心运行循环在 `iothread_run()`：
 
 ```c
 /* iothread.c */
@@ -512,7 +533,7 @@ static void *iothread_run(void *opaque)
 }
 ```
 
-这意味着：主线程负责全局事件与定时器调度，而 I/O 密集的设备（例如 block、virtio）可以绑定到指定的 IO-Thread，在它自己的 `AioContext` 中处理事件。这样既能降低主线程负载，又能让 I/O 路径有更稳定的时序与并发控制。
+I/O 密集的设备（例如 block、virtio）可以通过启动参数绑定到指定的 IO 线程，在它自己的 `AioContext` 中处理事件，从而降低主线程负载，让 I/O 路径有更稳定的时序与并发控制。
 
 !!! question "随堂测验"
 

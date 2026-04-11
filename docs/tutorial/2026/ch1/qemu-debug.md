@@ -70,6 +70,7 @@
 
 ## GDB 远程调试客户机
 
+前面介绍了如何用 GDB 调试 QEMU 本身的源码。但有时候我们需要调试的不是 QEMU，而是运行在 QEMU 中的客户机程序（如固件、内核），这就需要使用 GDB 远程调试。
 
 !!! note "推荐阅读"
 
@@ -104,6 +105,8 @@ $ARCH-gdb $BINARY -ex "target remote localhost:1234"
 
 ## QEMU 日志系统
 
+GDB 适合交互式地逐步排查问题，但当需要大量批量信息（如完整指令流、中断记录）时，QEMU 的日志系统更加高效。
+
 QEMU 有一个灵活的日志系统，可以很方便地观测客户机的各种状态（指令流、中断、异常、系统调用）。
 
 下面给出基本命令格式：
@@ -121,9 +124,9 @@ $QEMU $QEMU_ARGS -d <log-type,...> -D <log-file-name>
 ```bash
 $QEMU -d ?
 Log items (comma separated):
-out_asm         show generated host assembly code for each compiled TB
+out_asm         show generated host assembly code for each compiled TB (Translation Block, TCG 的基本翻译单元，通常对应一个基本块)
 in_asm          show target assembly code for each compiled TB
-op              show micro ops for each compiled TB
+op              show micro ops for each compiled TB (TCG, Tiny Code Generator, QEMU 的动态二进制翻译引擎)
 op_opt          show micro ops after optimization
 op_ind          show micro ops before indirect lowering
 op_plugin       show micro ops before plugin injection
