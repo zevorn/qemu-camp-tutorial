@@ -383,25 +383,78 @@ struct PCIDeviceClass {
 
 下面给出 ObjectClass、DeviceClass、PCIDeviceClass 三者之间的关系图：
 
-```bash
-                     +----------------+
-                 +-- |                | --+
-                 |   |  ObjectClass   |   |
-                 |   |                |   |
-                 |   +----------------+   +--- DeviceClass
-                 |   |                |   |
-PCIDeviceClass --+   |  DeviceClass   |   |
-                 |   |  other fileds  |   |
-                 |   |                | --+
-                 |   +----------------+
-                 |   |                |
-                 |   | PCIDeviceClass |
-                 |   |  other fileds  |
-                 +-- |                |
-                     +----------------+
+```mermaid
+classDiagram
+    class ObjectClass {
+        +Type type
+        +const char *class_cast_cache[]
+        +ObjectUnparentFunc unparent
+        +GHashTable *properties
+    }
+
+    class DeviceClass {
+        +ObjectClass parent_class
+        ---
+        +DeviceRealize realize
+        +DeviceUnrealize unrealize
+        +const Property *props
+        +bool hotpluggable
+    }
+
+    class PCIDeviceClass {
+        +DeviceClass parent_class
+        ---
+        +PCIDeviceRealize realize
+        +uint16_t vendor_id
+        +uint16_t device_id
+        +uint8_t revision
+        +uint16_t class_id
+        +const char *romfile
+    }
+
+    ObjectClass <|-- DeviceClass : parent_class (first field)
+    DeviceClass <|-- PCIDeviceClass : parent_class (first field)
+
+    note for ObjectClass "offset 0x0: all types share this header"
+    note for DeviceClass "offset 0x0: starts with ObjectClass\nthen device-specific fields"
+    note for PCIDeviceClass "offset 0x0: starts with DeviceClass\nthen PCI-specific fields"
 ```
 
-可以看出来它们之间的包含与被包含的关系，事实上，编译器为 C++ 继承结构编译出来的内存分布与这里是类似的。
+C 语言通过将父类结构体作为子类的**第一个成员域**（offset 0），实现了类似 C++ 的继承内存布局——子类指针可以直接强制转换为父类指针，因为它们在内存起始位置共享相同的布局。事实上，编译器为 C++ 继承结构编译出来的内存分布与这里是类似的。
+
+下面用一张内存布局图来直观展示这种包含关系：
+
+```
+    PCIDeviceClass memory layout
+    +---------------------------------------------+  offset 0x0
+    | +=========================================+ |
+    | | +---------------------------------+     | |
+    | | |         ObjectClass             |     | |
+    | | |   type                          |     | |
+    | | |   class_cast_cache[]            |     | |
+    | | |   unparent                      |     | |
+    | | |   properties                    |     | |
+    | | +---------------------------------+     | |
+    | |       DeviceClass                       | |
+    | |   realize                               | |
+    | |   unrealize                             | |
+    | |   props                                 | |
+    | |   hotpluggable                          | |
+    | +=========================================+ |
+    |         PCIDeviceClass                      |
+    |   realize (PCI)                             |
+    |   vendor_id, device_id                      |
+    |   revision, class_id                        |
+    |   romfile                                   |
+    +---------------------------------------------+
+
+    |<-- (ObjectClass *)ptr  points here
+    |<-- (DeviceClass *)ptr  points here
+    |<-- (PCIDeviceClass *)ptr  points here
+         all three pointers share the same address (offset 0x0)
+```
+
+由于父类总是占据子类内存的起始位置，`(ObjectClass *)pci_dev_class` 和 `(DeviceClass *)pci_dev_class` 都指向同一个内存地址，这就是 QOM 类型转换宏（如 `DEVICE_CLASS()`、`OBJECT_CLASS()`）能够安全工作的原因。
 问题来了，父类的成员域，是什么时候被初始化的呢？
 
 ```c
