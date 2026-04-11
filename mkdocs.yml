@@ -200,10 +200,14 @@ nav:
         - Rust 编程指南: exercise/2026/stage1/rust/rust-lang-manual.md
   - 博客:
     - 介绍页: blogs/index.md
-    - 如何参与 QEMU 邮件列表讨论: blogs/qemu-devel-email.md
-    - 一键启动 QEMU 云原生开发: blogs/qemu-cnb-dev.md
-    - QEMU 训练营 2025 专业阶段实验解析: blogs/qemu-camp-2025-stage2-note.md
-    - 浅析虚拟机软件仿真中的解释技术: blogs/simulater-interp.md
+    - 训练营 2026:
+      - 专业阶段总结 dingtao1: blogs/2026/qemu-camp-2026-dingtao1.md
+    - 训练营 2025:
+      - 专业阶段总结 LordaeronESZ: blogs/2025/qemu-camp-2025-LordaeronESZ.md
+    - 其他技术博客:
+      - 参与 QEMU 邮件列表讨论: blogs/misc/qemu-devel-email.md
+      - 一键 QEMU 云原生开发: blogs/misc/qemu-cnb-dev.md
+      - 虚拟机软件中的解释技术: blogs/misc/simulater-interp.md
   - 新闻:
     - 2026 年:
       - 03 月 17 日: news/2026/qemu-camp-update-2026-03-17.md
