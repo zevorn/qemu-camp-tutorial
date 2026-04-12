@@ -256,7 +256,7 @@ struct RISCVCPUConfig {
 BOOL_FIELD(ext_xg233)
 ```
 
-非标准扩展按RISC-V约定应以x开头。
+非标准扩展按 RISC-V 约定应以 x 开头。
 
 `cpu_cfg.h` 里有一组 `MATERIALISE_EXT_PREDICATE()` 宏，会为扩展生成统一的判断函数：
 
