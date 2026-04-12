@@ -4,6 +4,10 @@
 
     - 作者：[@zevorn](https://github.com/zevorn)
 
+!!! info "QEMU 版本"
+
+    本文基于 QEMU **v10.2.0**（tag: [`v10.2.0`](https://gitlab.com/qemu-project/qemu/-/tags/v10.2.0)，commit: `75eb8d57c6b9`）。
+
 在 QEMU 中为 RISC-V 架构添加一个新的 CPU 模型，其核心是建立在 QOM（QEMU Object Model）框架之上的。整个建模过程遵循 QEMU 设备模型的通用范式，但融入了 RISC-V 特有的扩展管理、多核拓扑和特权级架构。比如 QEMU RISC-V 包含了一个 RISCVCPUConfig 数据结构，允许为不同类型的 CPU，绑定对应的扩展，极大地的提高了灵活性和可维护性。
 
 !!! tip "概览"
