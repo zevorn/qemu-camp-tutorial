@@ -28,9 +28,13 @@ git clone git@github.com:gevico/qemu-camp-2026-exper-<你的 github 用户名>.g
 **第三步**，添加上游远程仓库，用于同步上游代码变更：
 
 ```bash
-git remote add upstream git@github.com:gevico/qemu-camp-2026-exper.git
+git remote add upstream git@github.com:gevico/gevico-classroom-qemu-camp-2026-exper-qemu-camp-2026-exper.git
 git pull upstream main --rebase
 ```
+
+!!! note "提示"
+
+    使用 SSH 地址需要在 GitHub 上配置 SSH Key，请参考 [GitHub SSH Key 配置指南](https://docs.github.com/zh/authentication/connecting-to-github-with-ssh)。
 
 ## 环境搭建
 
