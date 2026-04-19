@@ -152,5 +152,53 @@ make -f Makefile.camp test-rust
 
 每次 push 到 `main` 会触发 CI 评测，得分更新到[排行榜][4]。
 
+## 进阶实验
+
+!!! note "说明"
+
+    进阶实验为开放题目，不计入 100 分基础测评，但会作为训练营评优与推荐的重要参考。基础实验聚焦于总线/字符类外设（I2C、SPI），进阶方向则把 Rust 设备建模推进到块设备、PCIe、virtio 等 QEMU 中更复杂、更贴近生产环境的子系统。
+
+### 进阶实验一 Rust 实现 virtio-mmio 传输层
+
+挑战目标：用 Rust 重写 virtio-mmio 传输层的核心逻辑，并挂载到 G233 SoC（或 `riscv/virt` machine）上，对接 QEMU 现有的 virtio 设备后端（virtio-blk / virtio-net）。
+
+参考方向：
+
+- 阅读 `hw/virtio/virtio-mmio.c`，理清 MMIO 寄存器布局（`QueueSel`、`QueueNotify`、`InterruptStatus` 等）、virtqueue 的 kick / callback 生命周期。
+- 在 `rust/hw/virtio/` 下新建 crate，实现一个 `VirtioMmioTransport` 结构，暴露给 C 端的 VTable。
+- 最小验收：启动一个 Linux guest，能识别 Rust transport 下挂的 virtio-blk 设备并完成读写。
+
+### 进阶实验二 Rust 实现 virtio-blk 后端
+
+挑战目标：在进阶实验一的 transport 基础上，用 Rust 写一个完整的 virtio-blk 设备后端，复用 QEMU 的 `BlockBackend` 作为后端存储。
+
+关键点：
+
+- 处理 virtio-blk 的 feature negotiation（`VIRTIO_BLK_F_SEG_MAX`、`VIRTIO_BLK_F_FLUSH` 等）。
+- 正确使用 QEMU 的 AIO 线程池提交异步 I/O，用 Rust 的 `unsafe` + bindings 封装 `blk_aio_preadv` / `blk_aio_pwritev`。
+- 处理请求的描述符链解析、GPA → HVA 地址转换、状态字节写回。
+- 验收：挂一个 rootfs 镜像，让 Linux guest 能 `mount` 并读写。
+
+### 进阶实验三 Rust 实现 PCIe 设备建模
+
+挑战目标：参考 `hw/misc/edu.c`、`hw/misc/pci-testdev.c`，用 Rust 写一个挂在 PCIe 总线上的设备（可以是简易计算加速器、或最小的 NIC 原型）。
+
+要求至少覆盖以下 PCIe 特性：
+
+- PCI 配置空间（Vendor/Device ID、Class Code、BAR 规划）。
+- 至少一个 MMIO BAR 与一个可选的 I/O BAR，寄存器读写正确。
+- **MSI-X 中断**：实现 MSI-X Capability 和至少 4 个向量，设备内部事件能路由到 guest 中断。
+- **DMA**：设备能主动访问 guest 物理内存（用 `pci_dma_read` / `pci_dma_write` 对应的 Rust bindings）。
+
+验收：在 `riscv/virt` 或 `x86_64 pc` machine 上插入该设备，用一段小程序（可以是 QTest）验证 MMIO、MSI-X、DMA 三条链路。
+
+### 进阶实验四 把 GPGPU 方向的设备用 Rust 重写
+
+如果你同时完成了 GPU 方向，可以把 `hw/gpgpu/gpgpu.c`（PCIe 前端、BAR、DMA、MSI-X）或 `hw/gpgpu/gpgpu_core.c`（SIMT 解释器）移植到 Rust。
+
+建议先迁移前端的寄存器逻辑与 DMA 引擎，把 SIMT 执行后端留作 C，通过 Rust ↔ C FFI 互相调用；随后再尝试把 RV32I/RV32F 解释器也用 Rust 重写。
+
+评估维度：迁移范围、`unsafe` 使用是否克制、与原 C 实现的功能等价性（能否通过 GPGPU 方向的 17 道 QTest）。
+
 [3]: https://classroom.github.com/a/hwWFrmo_
 [4]: https://opencamp.cn/qemu/camp/2025/stage/3?tab=rank

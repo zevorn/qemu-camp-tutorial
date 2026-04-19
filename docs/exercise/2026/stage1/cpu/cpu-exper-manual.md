@@ -314,6 +314,55 @@ Xg233ai 在 RISC-V custom-3 编码空间（opcode `0x7B`）内定义了 10 条 R
 | `test_vadd_inplace` | 验证目标与源地址相同时（原地操作）的正确性 |
 | `compare` | 比较软件实现与硬件指令结果 |
 
+## 进阶实验
+
+!!! note "说明"
+
+    进阶实验为开放题目，不计入 100 分基础测评，但会作为训练营评优与推荐的重要参考。鼓励在完成 10 道必做题后深入探索 TCG 前后端、翻译开销与多核语义。
+
+### 进阶实验一 Helper → 内联 TCG IR 重写
+
+基础实验中 Xg233ai 指令都通过 `gen_helper_*` 调用 C 实现，每次执行都要跨出翻译块、保存上下文、调用 helper、再返回。对计算密集型的循环而言，这笔开销相当可观。
+
+挑战目标：从 `vadd`、`vrelu`、`vscale` 三条指令中任选 1~2 条，完全用 `tcg_gen_*` 原语在 decodetree 回调里直接生成 TCG IR，**不再调用 helper**。
+
+参考方向：
+
+- 学习 `tcg/tcg-op.h` 提供的整数/向量原语；查阅 `target/riscv/insn_trans/trans_rvv.c.inc` 中 RVV 指令的内联实现。
+- 用 `tcg_gen_gvec_*` 接口把向量循环交给宿主机 SIMD 执行。
+- 对比两个版本在 `test-insn-*` 上的实测耗时（可用 `time`、`perf stat`、或 `-d in_asm,out_asm` 查看生成代码规模）。
+
+### 进阶实验二 基于 TCG Plugin 的翻译性能分析
+
+QEMU 提供了 TCG Plugin 机制，可以在不修改核心翻译器的前提下，挂载到每条 guest 指令/TB 的执行路径，用来做剖析。
+
+挑战目标：使用或扩展 `tests/tcg/plugins/` 下已有的 `hotblocks.c`、`insn.c`、`cache.c` 插件，对某个测题（推荐 `test-insn-gemm` 或 `test-insn-vdot`）输出以下数据：
+
+- Xg233ai 自定义指令 vs. 普通 RISC-V 指令的执行占比。
+- 翻译块（TB）命中率、链接命中率。
+- 每条 Xg233ai 指令在生成代码中的 host 指令条数。
+
+产出一份简短的分析报告，指出当前实现中开销最大的环节。
+
+### 进阶实验三 MTTCG 下的正确性与性能
+
+QEMU 默认的 TCG 后端是单线程模式（`thread=single`），对于 G233 这种多 hart 平台，可以启用多线程 TCG（`-accel tcg,thread=multi`）以获得真并行。
+
+挑战目标：
+
+- 让 10 道基础测题在 `-smp 4 -accel tcg,thread=multi` 下稳定通过（初次实现可能会暴露内存序、原子性相关的 bug）。
+- 分析 `gemm`、`dma` 这类涉及大量 load/store 的指令，在 MTTCG 下是否存在对同一 guest 物理页的并发访问问题，必要时使用 `tcg_gen_qemu_ld_*` 的正确内存顺序标志。
+- 记录多核相对单核的加速比。
+
+### 进阶实验四 为自定义指令加装性能计数器
+
+挑战目标：在自定义指令的实现中加入轻量级计数器（例如每条指令的执行次数、累计 cycle 估算值），可以是：
+
+- 通过 `CPURISCVState` 中新增字段，导出到一组自定义 CSR，测试程序运行完后读出并通过 semihosting 打印。
+- 或者挂载到 TCG Plugin 侧，按指令名聚合计数。
+
+最终目标是在不修改测题源码的前提下，产出一张「Xg233ai 指令使用热度表」，为后续硬件设计/软件优化提供数据支撑。
+
 [1]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-environment.html
 [2]: https://github.com/riscv-collab/riscv-gnu-toolchain/releases/
 [3]: https://classroom.github.com/a/hwWFrmo_
