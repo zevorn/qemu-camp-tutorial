@@ -299,6 +299,75 @@ gdb -ex "target remote :1234" build/qemu-system-riscv64
 
 溢出原理：RXNE=1 时继续发送新数据 → 接收缓冲区满 → OVERRUN=1。
 
+## 进阶实验
+
+!!! note "说明"
+
+    进阶实验为开放题目，不计入 100 分基础测评，但会作为训练营评优与推荐的重要参考。建议在通过全部 10 道基础测题后再尝试，因为它们依赖完整的 G233 板级建模（CPU、内存、PLIC、CLINT、串口）。
+
+### 进阶实验一 为 G233 挂载 virtio-mmio 总线
+
+基础实验中 G233 只集成了 GPIO、PWM、WDT、SPI 等片内外设，没有块设备和网卡。virtio-mmio 是 QEMU 为嵌入式平台提供的轻量 virtio 传输层，非常适合挂到 G233 这种无 PCI 的 SoC 上。
+
+挑战目标：在 `hw/riscv/g233.c` 中预留一段 MMIO 地址空间（推荐 `0x1010_0000` 起），实例化 8 个 `virtio-mmio` transport slot，并把它们的中断线汇聚到 PLIC 上。
+
+参考方向：
+
+- 阅读 `hw/riscv/virt.c` 中 `create_virtio_regions` 的做法，把 slot 数、步长、中断号抽成 G233 machine 的常量。
+- 用 `sysbus_create_simple("virtio-mmio", ...)` 批量创建，注意每个 slot 间留出足够的步长（通常 0x200 / 0x1000）。
+- 更新 DTB（`create_fdt` 函数）中 `virtio_mmio@...` 节点，保证 guest 内核能发现设备。
+
+### 进阶实验二 接入 virtio-blk / virtio-net
+
+挑战目标：基于进阶实验一的 virtio-mmio 总线，让 G233 支持块设备与网卡：
+
+```bash
+qemu-system-riscv64 -M g233 \
+    -drive file=rootfs.ext4,format=raw,if=none,id=hd0 \
+    -device virtio-blk-device,drive=hd0 \
+    -netdev user,id=net0 \
+    -device virtio-net-device,netdev=net0
+```
+
+验收标准：
+
+- guest 内能看到 `/dev/vda` 和 `eth0`。
+- 对 `/dev/vda` 执行 `dd` 读写后重启数据保留。
+- `eth0` 通过 user-mode networking 可以 `ping 10.0.2.2`（QEMU 宿主）。
+
+### 进阶实验三 跑通 Linux 操作系统
+
+挑战目标：让 G233 能够作为标准 riscv64 Linux 的目标板，完整启动到 shell 提示符。
+
+建议步骤：
+
+1. **构建内核**：从 kernel.org 获取稳定版 Linux（推荐 ≥ 6.6），开启 `CONFIG_SOC_VIRT`、virtio-blk/net、串口、devtmpfs，以及 G233 所用中断控制器的支持（PLIC + CLINT）。
+2. **构建根文件系统**：用 buildroot 或 BusyBox 定制最小镜像，默认 init 进入 `/bin/sh`。
+3. **Bootloader**：先用 `-bios default`（OpenSBI）直接加载 kernel Image；进阶可接入 U-Boot 做二级引导。
+4. **DTB 完备化**：补全 `create_fdt` 中的 CPU、memory、clock、serial、virtio-mmio 节点，并把 `bootargs` 默认设为 `root=/dev/vda rw console=ttyS0 earlycon`。
+5. **最终启动命令示例**：
+
+    ```bash
+    qemu-system-riscv64 -M g233 -nographic \
+        -bios default -kernel Image \
+        -append "root=/dev/vda rw console=ttyS0 earlycon" \
+        -drive file=rootfs.ext4,format=raw,if=none,id=hd0 \
+        -device virtio-blk-device,drive=hd0
+    ```
+
+验收标准：从加电到进入 shell、能执行 `uname -a`、`ls /dev`、`cat /proc/cpuinfo` 看到正确的 hart 数量；启动日志中可以看到 OpenSBI → Linux 内核自解压 → 用户空间 init 的完整链路。
+
+### 进阶实验四 扩展 virtio 设备族
+
+在前三个进阶实验的基础上，进一步扩展 G233 支持的 virtio 设备：
+
+- `virtio-rng`：为 Linux 内核提供熵源，缓解 `random: crng init done` 长时间阻塞。
+- `virtio-console`：作为第二个串口/管理通道。
+- `virtio-9p`：通过 9P 协议把宿主机目录挂载到 guest，便于调试时共享文件。
+- `virtio-gpu`（更高难度）：接入 G233 显示子系统，做最小的 framebuffer 输出。
+
+产出一份说明文档，介绍各 virtio 设备的启动参数、使用方式、以及在 G233 上的性能/兼容性表现。
+
 [1]: https://qemu.readthedocs.io/en/v10.0.3/devel/build-environment.html
 [2]: https://github.com/riscv-collab/riscv-gnu-toolchain/releases/
 [3]: https://classroom.github.com/a/hwWFrmo_

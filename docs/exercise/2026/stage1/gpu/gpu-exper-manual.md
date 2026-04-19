@@ -288,5 +288,40 @@ GPGPU 方向的全部实验围绕虚拟 PCIe 3D 加速器的设备建模与 SIMT
 
     E2M1 的 `f32 → e2m1` 转换是手写实现（非 softfloat），你需要理解 E2M1 的 4-bit 格式并用 FP32 位模式阈值实现正确的舍入与饱和逻辑。
 
+## 进阶实验
+
+!!! note "说明"
+
+    进阶实验为开放题目，不计入 100 分基础测评，但会作为训练营评优与推荐的重要参考。这两道题目在基础实验的 GPGPU 设备模型之上，向「软件栈」与「真实 cmodel 集成」两个方向延伸，难度显著提升。
+
+### 进阶实验一 设计类 CUDA 的 GPGPU 软件栈
+
+基础实验只验证了设备端（QEMU 里的 GPGPU 模型）的正确性，测题通过 QTest 直接写 MMIO 寄存器触发 kernel，并没有驱动与编程模型的概念。这道题要你补齐软件侧。
+
+挑战目标：为本方向实现的虚拟 GPGPU 设计一套**类 CUDA 风格**的最小软件栈，包含：
+
+- **内核驱动**：在 Linux 或 ArceOS/rCore 中注册 PCI 设备，管理 BAR、MSI-X、DMA 描述符，暴露字符设备或系统调用接口。
+- **用户态运行时库**（libgpgpu）：封装 `gpgpuMalloc` / `gpgpuMemcpy` / `gpgpuLaunchKernel` 等 API，内部通过 ioctl + mmap 与驱动通信。
+- **编程模型**：规定 kernel 函数签名（`__global__` 风格）、grid/block 维度、内置变量（threadIdx/blockIdx）；提供一个简易前端（可以是 clang 插件、或仅约定手写 RV32 汇编 + 头文件）。
+- **Demo**：至少跑通 vector add、矩阵乘、ReLU 三个 kernel，端到端验证 Host → Device → Host 数据链路。
+
+评估维度：软件栈的层次清晰度、API 设计的简洁性、以及对基础 17 道 QTest 所建模能力的覆盖程度。
+
+### 进阶实验二 把 Vortex simx 集成进 QEMU 并适配 AI 软件栈
+
+基础实验中 `hw/gpgpu/gpgpu_core.c` 的 SIMT 执行引擎是手写的简化 RV32I/RV32F 解释器，缺失真实 GPGPU 的 cache、scheduler、divergence handling。Vortex（[vortex.cc](https://vortex.cc/)）是一个学术界广泛使用的开源 RISC-V GPGPU 项目，其 `simx` 是一个用 C++ 写的 cycle-level 模拟器。
+
+挑战目标：把 Vortex 的 `simx` 作为 GPGPU 的后端直接嵌入到 QEMU 中，替换当前的简化 cmodel。
+
+建议路径：
+
+- 保留 `hw/gpgpu/gpgpu.c`（PCIe 前端、BAR、寄存器、DMA），只把 `gpgpu_core.c` 的执行后端替换为 `simx`。
+- 解决 C 与 C++ 的 ABI 桥接：用 extern "C" 封装 `simx` 的 `CoreSim`，在 kernel dispatch 时喂入程序计数器、参数、VRAM 视图。
+- 正确对接中断：kernel 执行完毕后通过 simx 回调触发 MSI-X。
+- 适配 AI 软件栈：把进阶实验一设计的 libgpgpu/驱动与 Vortex 的 POCL / OpenCL 运行时对齐，至少跑通一个 Vortex 原生示例（如 `sgemm`）。
+- 目标客户端 OS：ArceOS 或 rCore，验证内核驱动可以在两套真实 RISC-V OS 上工作。
+
+评估维度：集成的完整度、simx 相对手写 cmodel 的指令覆盖增量（cache/barrier/divergence 是否生效）、以及在真实 AI workload 上的正确性。
+
 [3]: https://classroom.github.com/a/hwWFrmo_
 [5]: gpu-datasheet.md
