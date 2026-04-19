@@ -116,8 +116,8 @@ qemu-camp-2026-<你的 GitHub ID>.md
 
 !!! note "参考博客"
 
-    - [专业阶段总结 dingtao1](../../blogs/2026/qemu-camp-2026-dingtao1.md)
-    - [专业阶段总结 LordaeronESZ](../../blogs/2025/qemu-camp-2025-LordaeronESZ.md)
+    - [专业阶段总结 dingtao1](../../../blogs/2026/qemu-camp-2026-dingtao1.md)
+    - [专业阶段总结 LordaeronESZ](../../../blogs/2025/qemu-camp-2025-LordaeronESZ.md)
 
 **第四步**，提交 Pull Request，PR 标题格式：
 
